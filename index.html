@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sprint Dash — Deviens Scrum Master</title>
+<style>
+  :root {
+    --navy: #14213D;
+    --navy-2: #1B2B4F;
+    --navy-3: #26395F;
+    --orange: #E8702A;
+    --orange-soft: #FDEBDD;
+    --orange-ink: #8A3A0B;
+    --teal: #3FC1AE;
+    --teal-soft: #DDF5F0;
+    --teal-ink: #0F5C51;
+    --good: #1F8F5F;
+    --good-soft: #E2F5EC;
+    --good-ink: #135C3C;
+    --card: #FBFAF6;
+    --ink: #14213D;
+    --muted: #586176;
+    --line: #E3DFD3;
+    --light: #F4F2EC;
+    --radius: 18px;
+    --shadow: 0 8px 22px rgba(0, 0, 0, .22);
+    --font-head: ui-rounded, "SF Pro Rounded", "Arial Rounded MT Bold", "Nunito", "Segoe UI", system-ui, sans-serif;
+    --font-body: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { font-size: 18px; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background-color: var(--navy);
+    background-image:
+      radial-gradient(900px 500px at 100% -10%, rgba(63, 193, 174, .14), transparent 60%),
+      radial-gradient(800px 500px at -10% 110%, rgba(232, 112, 42, .12), transparent 60%);
+    background-attachment: fixed;
+    color: var(--light);
+    font-family: var(--font-body);
+    line-height: 1.45;
+  }
+  h1, h2, h3, h4 { font-family: var(--font-head); font-weight: 800; line-height: 1.2; margin: 0; }
+  p { margin: 0; }
+  button { font: inherit; }
+
+  /* ---------- Top bar ---------- */
+  .topbar {
+    position: sticky; top: 0; z-index: 20;
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    padding: 10px 24px;
+    background: rgba(20, 33, 61, .92);
+    border-bottom: 1px solid rgba(255, 255, 255, .08);
+    backdrop-filter: blur(6px);
+  }
+  .brand { font: 800 1.25rem var(--font-head); white-space: nowrap; }
+  .brand span { color: var(--orange); }
+  .stats { display: flex; gap: 10px; flex-wrap: wrap; flex: 1; justify-content: center; }
+  body[data-screen="start"] .stats { display: none; }
+  .stat {
+    background: var(--navy-3); border-radius: 999px; padding: 6px 16px;
+    font-size: 1rem; white-space: nowrap;
+  }
+  .stat strong { font-family: var(--font-head); font-size: 1.1rem; display: inline-block; transition: transform .25s ease, color .25s ease; }
+  .stat strong.bump { transform: scale(1.3); color: var(--teal); }
+  .stat strong.bump-down { transform: scale(1.3); color: var(--orange); }
+  .tools { display: flex; gap: 8px; margin-left: auto; }
+
+  /* ---------- Buttons ---------- */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    min-height: 52px; padding: 10px 26px;
+    border: 0; border-radius: 999px; cursor: pointer;
+    font: 800 1.05rem var(--font-head);
+    transition: transform .15s ease, box-shadow .15s ease, background-color .15s ease, opacity .2s ease;
+  }
+  .btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 18px rgba(0, 0, 0, .25); }
+  .btn:focus-visible, .icon-btn:focus-visible, .choice:focus-visible { outline: 3px solid var(--teal); outline-offset: 3px; }
+  .btn:disabled { opacity: .4; cursor: not-allowed; }
+  .btn-primary { background: var(--orange); color: var(--navy); }
+  .btn-teal { background: var(--teal); color: var(--navy); }
+  .btn-ghost { background: transparent; color: var(--light); border: 2px solid rgba(255, 255, 255, .35); }
+  .btn-big { font-size: 1.35rem; min-height: 64px; padding: 12px 44px; }
+  .icon-btn {
+    min-width: 48px; min-height: 48px; padding: 6px 14px;
+    border-radius: 999px; border: 2px solid rgba(255, 255, 255, .25);
+    background: transparent; color: var(--light); cursor: pointer; font-size: 1rem; font-weight: 700;
+    transition: background-color .15s ease, border-color .15s ease;
+  }
+  .icon-btn:hover { background: var(--navy-3); border-color: var(--teal); }
+
+  /* ---------- Layout ---------- */
+  main { max-width: 1260px; margin: 0 auto; padding: 18px 24px 40px; }
+  .screen { display: none; }
+  .screen.active { display: block; animation: fade-in .35s ease; }
+  @keyframes fade-in { from { opacity: 0; transform: translateY(8px); } }
+  .card {
+    background: var(--card); color: var(--ink);
+    border-radius: var(--radius); padding: 20px 22px; box-shadow: var(--shadow);
+  }
+  .phase-head { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 14px; }
+  .phase-tag {
+    font: 800 1rem var(--font-head); text-transform: uppercase; letter-spacing: .05em;
+    color: var(--navy); background: var(--teal); padding: 6px 14px; border-radius: 999px;
+  }
+  .hint { font-size: 1.05rem; color: #DCE3F0; }
+  .hint strong { color: var(--orange); }
+
+  /* ---------- Start screen ---------- */
+  .hero { max-width: 780px; margin: 2vh auto 0; text-align: center; }
+  .logo-emoji { font-size: 2.8rem; line-height: 1.2; }
+  .logo { font: 800 clamp(2.8rem, 7vw, 4.4rem) var(--font-head); letter-spacing: -.01em; }
+  .logo span { color: var(--orange); }
+  .tagline { color: var(--teal); font: 700 1.2rem var(--font-head); margin-top: 6px; }
+  .goal { font-size: 1.25rem; margin: 14px auto 20px; max-width: 680px; }
+  .howto { text-align: left; margin-top: 22px; padding: 16px 22px; }
+  .howto h2 { font-size: 1.25rem; margin-bottom: 10px; }
+  .howto ol { margin: 0; padding-left: 0; list-style: none; display: grid; gap: 8px; }
+  .howto li { display: flex; gap: 12px; align-items: baseline; }
+  .howto .num {
+    flex: none; width: 30px; height: 30px; border-radius: 50%; display: inline-grid; place-items: center;
+    background: var(--orange); color: var(--navy); font: 800 1rem var(--font-head);
+  }
+  .start-links { margin-top: 18px; }
+
+  /* ---------- Planning ---------- */
+  .plan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; align-items: start; }
+  .column {
+    background: rgba(255, 255, 255, .05);
+    border: 3px dashed transparent; border-radius: 22px; padding: 16px;
+    transition: border-color .2s ease, background-color .2s ease;
+  }
+  .column.sprint-col { background: rgba(63, 193, 174, .08); }
+  .column.over { border-color: var(--teal); background: rgba(63, 193, 174, .16); }
+  .col-head h2 { font-size: 1.4rem; }
+  .col-head .sub { color: #C9D2E3; font-size: 1rem; margin-top: 2px; }
+  .cards {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(215px, 1fr));
+    gap: 18px 14px; margin-top: 18px; min-height: 130px; align-content: start;
+  }
+  .story {
+    position: relative; display: flex; flex-direction: column; gap: 6px;
+    min-height: 84px; padding: 14px 14px 10px;
+    background: var(--note, #FFF1A8); color: var(--ink);
+    border-radius: 4px 4px 16px 4px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, .28);
+    transform: rotate(var(--rot, 0deg));
+    transition: transform .18s ease, box-shadow .18s ease, opacity .18s ease;
+    cursor: grab; user-select: none; -webkit-user-select: none;
+  }
+  .story::before {
+    content: ""; position: absolute; top: -8px; left: 50%; width: 58px; height: 16px;
+    transform: translateX(-50%) rotate(-3deg);
+    background: rgba(255, 255, 255, .6); box-shadow: 0 1px 2px rgba(0, 0, 0, .12);
+  }
+  .story:hover { transform: rotate(0deg) translateY(-3px) scale(1.02); box-shadow: 0 10px 22px rgba(0, 0, 0, .32); }
+  .story:focus-visible { outline: 3px solid var(--teal); outline-offset: 4px; transform: rotate(0deg); }
+  .story:active { cursor: grabbing; }
+  .story.dragging { opacity: .35; }
+  .story.just-moved { animation: pop .35s ease; }
+  @keyframes pop { from { opacity: .2; transform: scale(.85) rotate(var(--rot, 0deg)); } }
+  .story .meta { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .story .rank { font: 800 .9rem var(--font-head); color: var(--muted); text-transform: uppercase; letter-spacing: .03em; }
+  .story .pts { background: var(--navy); color: #fff; font: 800 .95rem var(--font-head); border-radius: 999px; padding: 2px 11px; white-space: nowrap; }
+  .story .title { font: 700 1.05rem var(--font-head); line-height: 1.25; padding-right: 28px; }
+  .story .action {
+    position: absolute; right: 10px; bottom: 10px; width: 28px; height: 28px; border-radius: 50%;
+    display: grid; place-items: center; background: rgba(20, 33, 61, .12); color: var(--navy);
+    font: 800 1rem var(--font-head); transition: background-color .15s ease, color .15s ease;
+  }
+  .story:hover .action, .story:focus-visible .action { background: var(--teal); }
+  .empty {
+    grid-column: 1 / -1; display: grid; place-items: center; text-align: center;
+    min-height: 130px; padding: 16px; border-radius: 16px;
+    border: 2px dashed rgba(255, 255, 255, .3); color: #C9D2E3; font-size: 1.05rem;
+  }
+  .capacity { background: var(--card); color: var(--ink); border-radius: 16px; padding: 12px 16px 14px; margin-top: 12px; }
+  .cap-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .cap-top strong { font: 800 1.3rem var(--font-head); }
+  .cap-bar { position: relative; height: 20px; background: #E7E3D8; border-radius: 999px; margin: 8px 0 22px; }
+  .cap-zone { position: absolute; top: 0; bottom: 0; left: 64%; width: 16%; background: rgba(63, 193, 174, .35); }
+  .cap-fill {
+    position: absolute; left: 0; top: 0; bottom: 0; width: 0; border-radius: 999px;
+    background: var(--teal); transition: width .35s ease, background-color .3s ease;
+  }
+  .cap-fill.warn { background: var(--orange); }
+  .cap-mark { position: absolute; top: -4px; bottom: -4px; width: 3px; background: var(--navy); border-radius: 2px; }
+  .cap-label { position: absolute; top: 24px; transform: translateX(-50%); font-size: .85rem; color: var(--muted); font-weight: 700; }
+  .cap-msg { font-weight: 700; font-size: 1rem; min-height: 1.5em; }
+  .cap-msg.good { color: var(--good-ink); }
+  .cap-msg.mid { color: var(--teal-ink); }
+  .cap-msg.bad { color: var(--orange-ink); }
+  .start-row { display: flex; justify-content: flex-end; margin-top: 12px; }
+
+  /* ---------- Sprint ---------- */
+  .sprint-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 22px; align-items: start; }
+  .days { display: flex; gap: 8px; flex-wrap: wrap; }
+  .dpill { padding: 5px 14px; border-radius: 999px; background: var(--navy-3); color: #C9D2E3; font: 800 .95rem var(--font-head); transition: background-color .25s ease, color .25s ease; }
+  .dpill.cur { background: var(--orange); color: var(--navy); }
+  .dpill.good { background: rgba(63, 193, 174, .28); color: #C8F3EA; }
+  .dpill.bad { background: rgba(232, 112, 42, .3); color: #FFD6BC; }
+  .event-tag { display: inline-block; background: var(--orange-soft); color: var(--orange-ink); font: 800 .95rem var(--font-head); padding: 4px 12px; border-radius: 999px; }
+  .event-card h2 { font-size: 1.55rem; margin: 10px 0 8px; }
+  .event-text { font-size: 1.1rem; }
+  .choices-label { font: 800 1rem var(--font-head); color: var(--muted); margin: 14px 0 8px; }
+  .choices { display: grid; gap: 10px; }
+  .choice {
+    display: flex; gap: 12px; align-items: flex-start; width: 100%; min-height: 56px;
+    padding: 12px 14px; text-align: left; cursor: pointer;
+    background: #fff; color: var(--ink); border: 2px solid var(--line); border-radius: 14px;
+    font-size: 1rem; line-height: 1.4;
+    transition: border-color .15s ease, background-color .2s ease, transform .15s ease, opacity .2s ease;
+  }
+  .choice:hover:not(:disabled) { border-color: var(--teal); transform: translateX(4px); }
+  .choice:disabled { cursor: default; }
+  .choice .letter {
+    flex: none; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center;
+    background: var(--navy); color: #fff; font: 800 1rem var(--font-head); transition: background-color .2s ease;
+  }
+  .choice.correct { border-color: var(--good); background: var(--good-soft); }
+  .choice.correct .letter { background: var(--good); }
+  .choice.wrong { border-color: var(--orange); background: var(--orange-soft); }
+  .choice.wrong .letter { background: var(--orange); }
+  .choice.dim { opacity: .55; }
+  .choice .best-tag { display: block; font: 800 .9rem var(--font-head); color: var(--good-ink); margin-top: 4px; }
+  .feedback {
+    margin-top: 14px; padding: 14px 16px; border-radius: 14px; border-left: 7px solid;
+    opacity: 0; transform: translateY(8px); transition: opacity .3s ease, transform .3s ease;
+  }
+  .feedback.show { opacity: 1; transform: none; }
+  .feedback.good { background: var(--good-soft); border-color: var(--good); color: var(--good-ink); }
+  .feedback.bad { background: var(--orange-soft); border-color: var(--orange); color: var(--orange-ink); }
+  .feedback strong { font: 800 1.15rem var(--font-head); display: block; margin-bottom: 4px; }
+  .feedback .burn { margin-top: 6px; font-weight: 700; }
+  .next-row { display: flex; justify-content: flex-end; margin-top: 14px; }
+
+  .sprint-grid > .chart-card { position: sticky; top: 76px; }
+  .chart-card h3 { font-size: 1.3rem; }
+  .chart-card .sub { color: var(--muted); font-size: 1rem; }
+  .chart { margin-top: 8px; }
+  .chart svg { display: block; width: 100%; height: auto; }
+  .chart .grid { stroke: #E6E2D7; stroke-width: 1; }
+  .chart .axis { stroke: #A9AEBB; stroke-width: 1.5; }
+  .chart .lab { fill: var(--muted); font: 600 15px var(--font-body); }
+  .chart .ideal { stroke: #8A93A6; stroke-width: 3; stroke-dasharray: 9 7; fill: none; }
+  .chart .real { stroke: var(--orange); stroke-width: 4.5; fill: none; stroke-linejoin: round; stroke-linecap: round; }
+  .chart .seg-new { stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw .7s ease forwards; }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  .chart .pt { fill: #fff; stroke: var(--orange); stroke-width: 3; }
+  .chart .pt.last { fill: var(--orange); animation: fade-in .5s ease .5s backwards; }
+  .chart .val { fill: var(--navy); font: 800 16px var(--font-head); paint-order: stroke; stroke: var(--card); stroke-width: 5px; stroke-linejoin: round; }
+  .legend { display: flex; gap: 22px; flex-wrap: wrap; font-size: 1rem; color: var(--ink); margin-top: 6px; }
+  .legend span { display: inline-flex; align-items: center; gap: 8px; }
+  .sw { width: 34px; height: 0; border-top: 4px solid var(--orange); display: inline-block; }
+  .sw.ideal { border-top: 3px dashed #8A93A6; }
+  .mini-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
+  .mini { background: #fff; border: 2px solid var(--line); border-radius: 14px; padding: 8px 10px; text-align: center; }
+  .mini b { display: block; font: 800 1.4rem var(--font-head); }
+  .mini span { font-size: .9rem; color: var(--muted); }
+  .mini.behind b { color: var(--orange-ink); }
+  .mini.ontrack b { color: var(--good-ink); }
+
+  /* ---------- Results ---------- */
+  .results-grid { display: grid; grid-template-columns: 1fr 1.15fr; gap: 22px; align-items: start; }
+  .stack { display: grid; gap: 22px; }
+  .score-card { text-align: center; }
+  .score-big { font: 800 4.4rem var(--font-head); color: var(--navy); line-height: 1; transition: color .3s ease; }
+  .score-big small { font-size: 1.6rem; color: var(--muted); }
+  .title-badge { display: inline-block; margin-top: 10px; padding: 8px 20px; border-radius: 999px; background: var(--orange); color: var(--navy); font: 800 1.3rem var(--font-head); }
+  .score-note { color: var(--muted); margin-top: 10px; font-size: 1rem; }
+  .breakdown { list-style: none; padding: 0; margin: 16px 0 0; text-align: left; }
+  .breakdown li { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+  .breakdown li:last-child { border-bottom: 0; }
+  .breakdown .detail { display: block; font-size: .9rem; color: var(--muted); }
+  .breakdown b { font-family: var(--font-head); white-space: nowrap; }
+  .card h3 { font-size: 1.35rem; margin-bottom: 10px; }
+  #recap { max-height: 50vh; overflow-y: auto; padding-right: 4px; }
+  .recap-item { background: #fff; border: 2px solid var(--line); border-left: 7px solid var(--orange); border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; }
+  .recap-item .tag { font: 800 .9rem var(--font-head); color: var(--orange-ink); text-transform: uppercase; letter-spacing: .03em; }
+  .recap-item h4 { font-size: 1.15rem; margin: 2px 0 6px; }
+  .recap-item p { margin-top: 4px; font-size: 1rem; }
+  .recap-item .you { color: var(--orange-ink); }
+  .recap-item .best { color: var(--good-ink); font-weight: 600; }
+  .recap-perfect { background: var(--good-soft); color: var(--good-ink); border-radius: 12px; padding: 14px; font-weight: 700; }
+  .retro-q { font-size: 1.05rem; margin-bottom: 10px; }
+  .actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+
+  /* ---------- Glossary overlay ---------- */
+  .overlay {
+    position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 20px;
+    background: rgba(8, 14, 30, .72);
+    opacity: 0; visibility: hidden; transition: opacity .2s ease, visibility .2s ease;
+  }
+  .overlay.open { opacity: 1; visibility: visible; }
+  .modal { width: 100%; max-width: 780px; max-height: 86vh; overflow: auto; transform: translateY(12px); transition: transform .25s ease; }
+  .overlay.open .modal { transform: none; }
+  .modal-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .modal-head h2 { font-size: 1.6rem; }
+  .close-btn { background: var(--navy); color: #fff; border: 0; }
+  .close-btn:hover { background: var(--navy-3); }
+  .gloss { margin: 0; display: grid; gap: 4px; }
+  .gloss dt { font: 800 1.1rem var(--font-head); color: var(--teal-ink); margin-top: 10px; }
+  .gloss dd { margin: 0; }
+
+  @media (max-width: 960px) {
+    .plan-grid, .sprint-grid, .results-grid { grid-template-columns: 1fr; }
+    .sprint-grid > .chart-card { position: static; }
+    .stats { order: 3; flex-basis: 100%; }
+  }
+  @media (max-width: 640px) {
+    html { font-size: 17px; }
+    main { padding: 14px 16px 32px; }
+    .topbar { padding: 8px 16px; }
+    .mini-stats { grid-template-columns: 1fr 1fr 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    .chart .seg-new { stroke-dashoffset: 0; }
+  }
+</style>
+</head>
+<body data-screen="start">
+
+<header class="topbar">
+  <div class="brand">🏃 Sprint <span>Dash</span></div>
+  <div class="stats" aria-live="polite">
+    <div class="stat">📅 <strong id="h-day">Planification</strong></div>
+    <div class="stat">🎯 <span id="h-points-label">Points restants</span> : <strong id="h-points">0</strong></div>
+    <div class="stat">⭐ Score : <strong id="h-score">0</strong></div>
+  </div>
+  <div class="tools">
+    <button class="icon-btn" id="btn-gloss-top" type="button">📖 Glossaire</button>
+    <button class="icon-btn" id="btn-mute" type="button" aria-label="Couper le son">🔊</button>
+  </div>
+</header>
+
+<main>
+  <!-- ===== Start screen ===== -->
+  <section id="screen-start" class="screen active">
+    <div class="hero">
+      <div class="logo-emoji" aria-hidden="true">🏃‍♀️💨</div>
+      <h1 class="logo">Sprint <span>Dash</span></h1>
+      <p class="tagline">Le jeu du Scrum Master</p>
+      <p class="goal">Tu es le Scrum Master du projet <strong>UniSalles</strong> : mène ton équipe au bout d’un sprint de 5 jours en prenant les bonnes décisions Scrum !</p>
+      <button class="btn btn-primary btn-big" id="btn-play" type="button">Jouer ▶</button>
+      <div class="card howto">
+        <h2>Comment jouer</h2>
+        <ol>
+          <li><span class="num">1</span><span><strong>Planifie</strong> : glisse ou clique sur les user stories pour remplir le sprint (capacité : 40 points).</span></li>
+          <li><span class="num">2</span><span><strong>Chaque jour</strong>, un imprévu arrive : choisis la meilleure réponse de Scrum Master.</span></li>
+          <li><span class="num">3</span><span><strong>Suis le burndown chart</strong> et découvre ton score à la revue du sprint.</span></li>
+        </ol>
+      </div>
+      <div class="start-links"><button class="btn btn-ghost" id="btn-gloss-start" type="button">📖 Voir le glossaire</button></div>
+    </div>
+  </section>
+
+  <!-- ===== Phase 1: Sprint Planning ===== -->
+  <section id="screen-planning" class="screen">
+    <div class="phase-head">
+      <span class="phase-tag">Phase 1 · Sprint Planning</span>
+      <p class="hint">👉 <strong>Glisse</strong> ou <strong>clique</strong> sur une user story pour l’ajouter au Sprint Backlog. Clique à nouveau pour la retirer.</p>
+    </div>
+    <div class="plan-grid">
+      <div class="column" id="col-pb" data-zone="pb">
+        <div class="col-head">
+          <h2>📋 Product Backlog</h2>
+          <p class="sub">Classé par priorité par le Product Owner (priorité 1 = la plus importante).</p>
+        </div>
+        <div class="cards" id="list-pb"></div>
+      </div>
+      <div class="column sprint-col" id="col-sb" data-zone="sb">
+        <div class="col-head">
+          <h2>🏁 Sprint Backlog</h2>
+          <div class="capacity">
+            <div class="cap-top"><span>Capacité de l’équipe</span><strong id="cap-text">0 / 40 points</strong></div>
+            <div class="cap-bar" aria-hidden="true">
+              <div class="cap-zone"></div>
+              <div class="cap-fill" id="cap-fill"></div>
+              <div class="cap-mark" style="left:80%"></div>
+              <span class="cap-label" style="left:50%">25</span>
+              <span class="cap-label" style="left:64%">32</span>
+              <span class="cap-label" style="left:80%">40</span>
+            </div>
+            <p class="cap-msg" id="cap-msg" aria-live="polite"></p>
+          </div>
+          <div class="start-row">
+            <button class="btn btn-primary" id="btn-start-sprint" type="button" disabled>Démarrer le sprint 🚀</button>
+          </div>
+        </div>
+        <div class="cards" id="list-sb"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Phase 2: Sprint ===== -->
+  <section id="screen-sprint" class="screen">
+    <div class="phase-head">
+      <span class="phase-tag">Phase 2 · Le Sprint</span>
+      <div class="days" id="day-pills"></div>
+    </div>
+    <div class="sprint-grid">
+      <article class="card event-card" id="event-card" aria-live="polite"></article>
+      <div class="card chart-card">
+        <h3>📉 Burndown Chart</h3>
+        <p class="sub">Points restants à la fin de chaque journée</p>
+        <div class="chart" id="chart-sprint"></div>
+        <div class="legend"><span><i class="sw ideal"></i>Ligne idéale</span><span><i class="sw"></i>Ligne réelle</span></div>
+        <div class="mini-stats" id="mini-stats"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Phase 3: Review & Retrospective ===== -->
+  <section id="screen-results" class="screen">
+    <div class="phase-head">
+      <span class="phase-tag">Phase 3 · Revue du sprint &amp; Rétrospective</span>
+    </div>
+    <div class="results-grid">
+      <div class="stack">
+        <div class="card score-card">
+          <div class="score-big"><span id="final-score">0</span><small> / 100</small></div>
+          <div class="title-badge" id="final-title"></div>
+          <p class="score-note" id="score-note"></p>
+          <ul class="breakdown" id="breakdown"></ul>
+        </div>
+        <div class="card chart-card">
+          <h3>📉 Burndown final</h3>
+          <div class="chart" id="chart-final"></div>
+          <div class="legend"><span><i class="sw ideal"></i>Ligne idéale</span><span><i class="sw"></i>Ligne réelle</span></div>
+        </div>
+      </div>
+      <div class="stack">
+        <div class="card">
+          <h3>📚 Ce qu’il faut retenir</h3>
+          <div id="recap"></div>
+        </div>
+        <div class="card">
+          <h3>🔁 Rétrospective</h3>
+          <p class="retro-q" id="retro-q"></p>
+          <div class="choices" id="retro-choices"></div>
+          <div id="retro-feedback"></div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-primary btn-big" id="btn-replay" type="button">🔄 Rejouer</button>
+          <button class="btn btn-teal btn-big" id="btn-gloss-end" type="button">📖 Voir le glossaire</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ===== Glossary overlay ===== -->
+<div class="overlay" id="glossary" role="dialog" aria-modal="true" aria-labelledby="gloss-title">
+  <div class="card modal">
+    <div class="modal-head">
+      <h2 id="gloss-title">📖 Glossaire Scrum</h2>
+      <button class="icon-btn close-btn" id="btn-gloss-close" type="button">✕ Fermer</button>
+    </div>
+    <dl class="gloss" id="gloss-list"></dl>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+/* =====================================================================
+   GAME DATA — teachers can edit everything in this block.
+   Use double quotes for strings; apostrophes (') are fine inside them.
+   Placeholders {reste} and {ideal} are replaced by live numbers.
+   ===================================================================== */
+
+const CONFIG = {
+  capacity: 40,          // team capacity in story points
+  days: 5,               // sprint length
+  bestMin: 32,           // best commitment range: bestMin..capacity
+  underBelow: 25,        // below this = under-commitment
+  pointsGood: 10,        // score for a correct daily answer
+  pointsBad: -3          // score for a poor daily answer
+};
+
+// Product Backlog, ordered by priority by the Product Owner (first = most important).
+const STORIES = [
+  { id: "s1", title: "Se connecter avec son compte étudiant", points: 8 },
+  { id: "s2", title: "Consulter les salles libres", points: 8 },
+  { id: "s3", title: "Réserver une salle sur un créneau", points: 13 },
+  { id: "s4", title: "Confirmation par e-mail", points: 5 },
+  { id: "s5", title: "Annuler une réservation", points: 5 },
+  { id: "s6", title: "Gérer les salles (administrateur)", points: 13 },
+  { id: "s7", title: "Filtrer les salles par capacité", points: 3 },
+  { id: "s8", title: "Mode sombre", points: 2 }
+];
+
+// One event per day, in order. Exactly one choice has correct: true.
+// goodBurn / badBurn: share of the normal daily work the team completes (1 = normal day).
+// scopeCut: on a correct answer, the PO removes the lowest-priority story from the sprint.
+const EVENTS = [
+  {
+    icon: "⏱️",
+    title: "Le Daily Scrum qui déborde",
+    text: "Ce matin, le Daily Scrum dure déjà 45 minutes : deux développeurs débattent en détail de la base de données. Les autres décrochent et regardent l'heure.",
+    goodBurn: 1, badBurn: 0.5,
+    why: "Le Daily Scrum dure 15 minutes maximum : il sert à synchroniser l'équipe, pas à résoudre les problèmes techniques.",
+    choices: [
+      { correct: true,
+        text: "Rappeler que le Daily Scrum dure 15 minutes, debout, et proposer de poursuivre la discussion technique juste après, entre les personnes concernées.",
+        feedback: "Exact : le Daily Scrum est limité à 15 minutes ; les sujets techniques se traitent après, avec les seules personnes concernées." },
+      { text: "Laisser la discussion continuer : il est important que tout le monde soit au courant de tout.",
+        feedback: "Non : un Daily Scrum trop long fait perdre du temps à toute l'équipe. Il doit rester court et ciblé." },
+      { text: "Supprimer le Daily Scrum pour le reste du sprint afin de gagner du temps.",
+        feedback: "Non : le Daily Scrum est un événement essentiel de Scrum. Il faut le raccourcir, pas le supprimer." }
+    ]
+  },
+  {
+    icon: "📞",
+    title: "Le client court-circuite l'équipe",
+    text: "Le responsable du campus appelle directement Léa, développeuse : « Ajoutez vite un plan interactif des bâtiments, c'est urgent ! »",
+    goodBurn: 1, badBurn: 0.5,
+    why: "Les nouvelles demandes passent par le Product Owner, qui les ajoute au Product Backlog. On ne change pas le contenu du sprint en cours.",
+    choices: [
+      { correct: true,
+        text: "Rediriger le client vers le Product Owner, qui ajoutera la demande au Product Backlog et la priorisera pour un prochain sprint.",
+        feedback: "Bravo : seul le Product Owner gère le Product Backlog, et le sprint en cours reste protégé." },
+      { text: "Léa commence tout de suite la nouvelle fonctionnalité : un client content, c'est l'essentiel.",
+        feedback: "Non : ajouter du travail en plein sprint met en danger l'objectif du sprint. Les demandes passent par le Product Owner." },
+      { text: "Refuser sèchement : l'équipe n'a pas à parler au client pendant le sprint.",
+        feedback: "Non : on ne rejette pas le client, on l'oriente vers le Product Owner, qui décidera de la priorité." }
+    ]
+  },
+  {
+    icon: "🔌",
+    title: "Le serveur de test est en panne",
+    text: "Karim ne peut plus tester sa fonctionnalité : le serveur de test est tombé depuis ce matin et il reste bloqué devant son écran.",
+    goodBurn: 0.4, badBurn: 0.15,
+    why: "Le Scrum Master lève les obstacles qui bloquent l'équipe, pour que les développeurs restent concentrés sur leur travail.",
+    choices: [
+      { correct: true,
+        text: "En tant que Scrum Master, tu prends l'obstacle en charge : tu contactes le service informatique pour faire réparer le serveur pendant que Karim avance sur une autre tâche.",
+        feedback: "Exactement : lever les obstacles fait partie du rôle du Scrum Master. La panne coûte un peu de temps, mais l'équipe continue d'avancer." },
+      { text: "Karim se débrouille seul : il passe la journée à essayer de réparer le serveur lui-même.",
+        feedback: "Non : Karim perd sa journée sur un problème hors de son travail. C'est au Scrum Master de lever cet obstacle." },
+      { text: "Ignorer le problème : le serveur finira bien par redémarrer.",
+        feedback: "Non : un obstacle ignoré bloque l'équipe et ralentit tout le sprint." }
+    ]
+  },
+  {
+    icon: "📉",
+    title: "L'équipe prend du retard",
+    text: "Il reste {reste} points à livrer alors que la ligne idéale en prévoit {ideal}. L'équipe est en retard et ne pourra pas tout terminer d'ici la fin du sprint.",
+    textAhead: "Il reste {reste} points (la ligne idéale en prévoit {ideal}). Mais l'équipe découvre qu'une story est bien plus complexe que prévu et ne pourra pas tout terminer.",
+    goodBurn: 1, badBurn: 0.5, scopeCut: true,
+    why: "Quand le sprint dérape, on discute du périmètre avec le Product Owner. On ne sacrifie ni la qualité (Definition of Done) ni la santé de l'équipe.",
+    choices: [
+      { correct: true,
+        text: "Discuter avec le Product Owner pour réduire le périmètre : on retire du sprint la story la moins prioritaire.",
+        feedback: "Bien joué : on ajuste le périmètre avec le Product Owner, sans sacrifier la qualité ni épuiser l'équipe." },
+      { text: "Demander à l'équipe de faire des heures supplémentaires tous les soirs jusqu'à la fin du sprint.",
+        feedback: "Non : Scrum vise un rythme soutenable. Une équipe épuisée fait plus d'erreurs et avance moins vite." },
+      { text: "Arrêter d'écrire et de lancer les tests pour aller plus vite.",
+        feedback: "Non : une story non testée ne respecte pas la Definition of Done ; elle n'est donc pas terminée." }
+    ]
+  },
+  {
+    icon: "🎤",
+    title: "Préparer la revue du sprint",
+    text: "Demain, les parties prenantes (responsable du campus, étudiants testeurs) assistent à la revue du sprint. Comment la préparer ?",
+    goodBurn: 1, badBurn: 0.5,
+    why: "La revue du sprint montre un incrément qui fonctionne aux parties prenantes et recueille leurs retours, en toute transparence.",
+    choices: [
+      { correct: true,
+        text: "Préparer une démonstration de l'application qui fonctionne et prévoir du temps pour recueillir les retours des parties prenantes.",
+        feedback: "Parfait : la revue du sprint sert à inspecter l'incrément réel et à adapter le Product Backlog grâce aux retours." },
+      { text: "Préparer un beau diaporama qui décrit les fonctionnalités, sans montrer l'application.",
+        feedback: "Non : des diapositives ne prouvent rien. On montre un incrément qui fonctionne vraiment." },
+      { text: "Cacher les stories non terminées pour donner une bonne image de l'équipe.",
+        feedback: "Non : Scrum repose sur la transparence. On présente honnêtement ce qui est fini et ce qui ne l'est pas." }
+    ]
+  }
+];
+
+const RETRO = {
+  question: "Quelle amélioration concrète l'équipe s'engage-t-elle à tester au prochain sprint ?",
+  choices: [
+    { correct: true,
+      text: "Une seule action précise : utiliser un minuteur de 15 minutes au Daily Scrum et noter chaque obstacle au tableau dès qu'il apparaît.",
+      feedback: "Excellent : une amélioration concrète, réaliste et vérifiable au prochain sprint. C'est tout l'esprit de la rétrospective." },
+    { text: "« Mieux communiquer » de manière générale, sans action précise.",
+      feedback: "Trop vague : sans action concrète, impossible de vérifier au prochain sprint si l'équipe s'est améliorée." },
+    { text: "Chercher qui est responsable du retard pour que cela ne se reproduise plus.",
+      feedback: "Non : la rétrospective n'est pas un tribunal. On améliore le fonctionnement de l'équipe, sans chercher de coupable." }
+  ]
+};
+
+// Messages shown during planning and in the final recap.
+const PLANNING_TEXTS = {
+  empty: "Choisis des stories pour remplir le sprint.",
+  over: "⚠️ Surcharge : l'équipe ne tiendra pas son engagement",
+  under: "⚠️ Sous-engagement : l'équipe peut en faire davantage",
+  ok: "👍 Correct, mais il reste de la marge (idéal : 32 à 40 points)",
+  best: "✅ Engagement réaliste : bien joué !",
+  recapBest: "S'engager sur 32 à 40 points : ce que l'équipe peut réellement terminer avec sa capacité de 40 points.",
+  whyOver: "Une équipe surchargée ne tient pas son engagement : elle s'épuise et la ligne réelle reste au-dessus de la ligne idéale jusqu'à la fin.",
+  whyUnder: "Un sprint sous-chargé gaspille la capacité de l'équipe et retarde la valeur livrée aux utilisateurs.",
+  whyOk: "Il restait de la capacité inutilisée : viser 32 à 40 points permet de livrer plus de valeur sans surcharger l'équipe.",
+  whyPriority: "Le Product Owner classe le Product Backlog par valeur : l'équipe prend d'abord les stories en haut de la liste."
+};
+
+const GLOSSARY = [
+  { term: "Product Owner", def: "La personne qui représente les utilisateurs et décide de l'ordre des priorités dans le Product Backlog." },
+  { term: "Scrum Master", def: "Le facilitateur de l'équipe : il fait respecter Scrum et lève les obstacles qui la bloquent." },
+  { term: "Équipe de développement", def: "Les personnes qui construisent le produit et s'organisent elles-mêmes pour réaliser le travail du sprint." },
+  { term: "Product Backlog", def: "La liste ordonnée de tout ce qu'on pourrait ajouter au produit, gérée par le Product Owner." },
+  { term: "Sprint Backlog", def: "Les user stories choisies pour le sprint en cours, avec le plan de l'équipe pour les réaliser." },
+  { term: "Revue du sprint", def: "La réunion de fin de sprint où l'équipe montre ce qui fonctionne aux parties prenantes et recueille leurs retours." },
+  { term: "Burndown Chart", def: "Le graphique qui montre, jour après jour, combien de points il reste à réaliser dans le sprint." },
+  { term: "Sprint", def: "Une période courte et fixe (ici 5 jours) pendant laquelle l'équipe réalise un incrément utilisable du produit." },
+  { term: "Daily Scrum", def: "Une réunion quotidienne de 15 minutes maximum pour faire le point et planifier la journée." },
+  { term: "Rétrospective", def: "La réunion où l'équipe choisit comment mieux travailler ensemble au prochain sprint." },
+  { term: "Definition of Done", def: "La liste des critères (tests, relecture…) qu'une story doit remplir pour être considérée comme terminée." },
+  { term: "Story points", def: "Une estimation de l'effort nécessaire pour réaliser une user story, relative aux autres stories." }
+];
+
+/* =====================================================================
+   ENGINE — no need to edit below this line to change the content.
+   ===================================================================== */
+
+const NOTE_COLORS = ["#FFF1A8", "#CFF1EA", "#FFD9BF", "#FBFAF6"];
+const NOTE_ROTS = ["-1.6deg", "1.1deg", "-0.6deg", "1.5deg"];
+const $ = (sel) => document.querySelector(sel);
+
+let S; // game state
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+const randInt = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const storyById = (id) => STORIES.find((s) => s.id === id);
+const rankOf = (id) => STORIES.findIndex((s) => s.id === id);
+const sumPicked = () => S.picked.reduce((t, id) => t + storyById(id).points, 0);
+const fmt = (n) => Number(n).toLocaleString("fr-FR", { maximumFractionDigits: 1 });
+
+function esc(s) {
+  return String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+}
+// Escape HTML and apply French typography (non-breaking space before : ; ! ? and inside « »).
+function fr(s) {
+  return esc(s).replace(/ ([:;!?»])/g, " $1").replace(/« /g, "« ").replace(/'/g, "’");
+}
+
+function newState() {
+  return {
+    picked: [],            // story ids, in the order the player chose them
+    committed: 0,
+    remaining: 0,
+    history: [],           // remaining points at the end of each day (index 0 = sprint start)
+    day: 0,
+    choiceOrder: EVENTS.map((ev) => shuffle(ev.choices.map((_, i) => i))),
+    retroOrder: shuffle(RETRO.choices.map((_, i) => i)),
+    answers: [],           // { day, choice, ok }
+    parts: { engagement: 0, priority: 0, events: 0, delivery: 0, retro: 0 },
+    engagement: null,
+    priorityHits: 0,
+    retroDone: false,
+    answered: false
+  };
+}
+
+function totalScore() {
+  const p = S.parts;
+  return Math.max(0, Math.min(100, p.engagement + p.priority + p.events + p.delivery + p.retro));
+}
+
+/* ---------- Sound (tiny Web Audio beeps) ---------- */
+let audioCtx = null;
+let muted = false;
+try { muted = localStorage.getItem("sprintdash-muted") === "1"; } catch (e) { /* storage unavailable */ }
+
+function beep(freqs, dur = 0.11, type = "sine") {
+  if (muted) return;
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    freqs.forEach((f, i) => {
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      const t = audioCtx.currentTime + i * dur;
+      o.type = type;
+      o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.12, t + 0.015);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g).connect(audioCtx.destination);
+      o.start(t);
+      o.stop(t + dur + 0.02);
+    });
+  } catch (e) { /* audio not available: stay silent */ }
+}
+const sfx = {
+  pick: () => beep([620], 0.08),
+  unpick: () => beep([420], 0.08),
+  good: () => beep([523, 659, 784], 0.1),
+  bad: () => beep([330, 247], 0.14, "triangle"),
+  next: () => beep([700], 0.06),
+  end: () => beep([523, 659, 784, 1047], 0.12)
+};
+function updateMuteButton() {
+  const b = $("#btn-mute");
+  b.textContent = muted ? "🔇" : "🔊";
+  b.setAttribute("aria-label", muted ? "Activer le son" : "Couper le son");
+  b.title = b.getAttribute("aria-label");
+}
+
+/* ---------- Screens & header ---------- */
+function showScreen(name) {
+  document.querySelectorAll(".screen").forEach((s) => s.classList.toggle("active", s.id === "screen-" + name));
+  document.body.dataset.screen = name;
+  updateHeader();
+  window.scrollTo(0, 0);
+}
+
+let lastScore = 0;
+function updateHeader() {
+  const scr = document.body.dataset.screen;
+  $("#h-day").textContent =
+    scr === "sprint" ? `Jour ${S.day}/${CONFIG.days}` :
+    scr === "results" ? "Sprint terminé" : "Planification";
+  $("#h-points-label").textContent = scr === "planning" ? "Points engagés" : "Points restants";
+  $("#h-points").textContent = scr === "planning" ? sumPicked() : S.remaining;
+  const sc = totalScore();
+  const el = $("#h-score");
+  el.textContent = sc;
+  if (sc !== lastScore) {
+    el.classList.remove("bump", "bump-down");
+    void el.offsetWidth;
+    el.classList.add(sc > lastScore ? "bump" : "bump-down");
+    setTimeout(() => el.classList.remove("bump", "bump-down"), 350);
+    lastScore = sc;
+  }
+}
+
+/* ---------- Phase 1: Sprint Planning ---------- */
+function engagementOf(sum) {
+  if (sum === 0) return { key: "empty", pts: 0, msg: PLANNING_TEXTS.empty, cls: "" };
+  if (sum > CONFIG.capacity) return { key: "over", pts: 0, msg: PLANNING_TEXTS.over, cls: "bad" };
+  if (sum < CONFIG.underBelow) return { key: "under", pts: 5, msg: PLANNING_TEXTS.under, cls: "bad" };
+  if (sum >= CONFIG.bestMin) return { key: "best", pts: 20, msg: PLANNING_TEXTS.best, cls: "good" };
+  return { key: "ok", pts: 12, msg: PLANNING_TEXTS.ok, cls: "mid" };
+}
+
+function storyCard(st, inSprint) {
+  const r = rankOf(st.id);
+  const action = inSprint ? "Retirer du sprint" : "Ajouter au sprint";
+  return `<div class="story" role="button" tabindex="0" draggable="true" data-id="${st.id}"
+      style="--note:${NOTE_COLORS[r % 4]};--rot:${NOTE_ROTS[r % 4]}" title="${action}"
+      aria-label="${esc(st.title)}, ${st.points} points, priorité ${r + 1}. ${action}">
+      <span class="meta"><span class="rank">Priorité ${r + 1}</span><span class="pts">${st.points} pts</span></span>
+      <span class="title">${fr(st.title)}</span>
+      <span class="action" aria-hidden="true">${inSprint ? "↩" : "＋"}</span>
+    </div>`;
+}
+
+function renderPlanning(movedId, keepFocus) {
+  const pb = STORIES.filter((s) => !S.picked.includes(s.id));
+  const sb = S.picked.map(storyById);
+  $("#list-pb").innerHTML = pb.length
+    ? pb.map((s) => storyCard(s, false)).join("")
+    : `<p class="empty">🎉 Toutes les stories sont dans le sprint.</p>`;
+  $("#list-sb").innerHTML = sb.length
+    ? sb.map((s) => storyCard(s, true)).join("")
+    : `<p class="empty">Dépose les stories ici ⤵<br>ou clique sur une story à gauche.</p>`;
+
+  const sum = sumPicked();
+  const eng = engagementOf(sum);
+  $("#cap-text").textContent = `${sum} / ${CONFIG.capacity} points`;
+  const fill = $("#cap-fill");
+  fill.style.width = Math.min(sum / 50, 1) * 100 + "%";
+  fill.classList.toggle("warn", eng.cls === "bad");
+  const msg = $("#cap-msg");
+  msg.innerHTML = fr(eng.msg);
+  msg.className = "cap-msg " + eng.cls;
+  $("#btn-start-sprint").disabled = S.picked.length === 0;
+
+  if (movedId) {
+    const el = document.querySelector(`.story[data-id="${movedId}"]`);
+    if (el) {
+      el.classList.add("just-moved");
+      if (keepFocus) el.focus({ preventScroll: true });
+    }
+  }
+  updateHeader();
+}
+
+function moveStory(id, toSprint, keepFocus) {
+  const inSprint = S.picked.includes(id);
+  if (toSprint && !inSprint) { S.picked.push(id); sfx.pick(); }
+  else if (!toSprint && inSprint) { S.picked.splice(S.picked.indexOf(id), 1); sfx.unpick(); }
+  else return;
+  renderPlanning(id, keepFocus);
+}
+
+function setupPlanningInput() {
+  const screen = $("#screen-planning");
+  screen.addEventListener("click", (e) => {
+    const card = e.target.closest(".story");
+    if (card) moveStory(card.dataset.id, !S.picked.includes(card.dataset.id), false);
+  });
+  screen.addEventListener("keydown", (e) => {
+    const card = e.target.closest(".story");
+    if (card && (e.key === "Enter" || e.key === " ")) {
+      e.preventDefault();
+      moveStory(card.dataset.id, !S.picked.includes(card.dataset.id), true);
+    }
+  });
+  screen.addEventListener("dragstart", (e) => {
+    const card = e.target.closest(".story");
+    if (!card) return;
+    e.dataTransfer.setData("text/plain", card.dataset.id);
+    e.dataTransfer.effectAllowed = "move";
+    card.classList.add("dragging");
+  });
+  screen.addEventListener("dragend", (e) => {
+    const card = e.target.closest(".story");
+    if (card) card.classList.remove("dragging");
+    document.querySelectorAll(".column.over").forEach((c) => c.classList.remove("over"));
+  });
+  document.querySelectorAll(".column").forEach((zone) => {
+    zone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      zone.classList.add("over");
+    });
+    zone.addEventListener("dragleave", (e) => {
+      if (!zone.contains(e.relatedTarget)) zone.classList.remove("over");
+    });
+    zone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      zone.classList.remove("over");
+      const id = e.dataTransfer.getData("text/plain");
+      if (storyById(id)) moveStory(id, zone.dataset.zone === "sb", false);
+    });
+  });
+}
+
+function startSprint() {
+  if (!S.picked.length) return;
+  S.committed = sumPicked();
+  S.remaining = S.committed;
+  S.history = [S.committed];
+  S.engagement = engagementOf(S.committed);
+  S.parts.engagement = S.engagement.pts;
+  const top = STORIES.slice(0, 3).map((s) => s.id);
+  S.priorityHits = S.picked.slice(0, 3).filter((id) => top.includes(id)).length;
+  S.parts.priority = Math.round((10 * S.priorityHits) / 3);
+  S.day = 1;
+  sfx.next();
+  showScreen("sprint");
+  renderDay();
+}
+
+/* ---------- Phase 2: the Sprint ---------- */
+const idealAt = (d) => S.committed * (1 - d / CONFIG.days);
+
+// Daily team throughput: the pace needed to finish, capped by capacity. Overload tires the team.
+function baseBurn() {
+  let b = Math.min(S.committed, CONFIG.capacity) / CONFIG.days;
+  if (S.committed > CONFIG.capacity) b *= 0.9;
+  return b;
+}
+
+function renderDayPills() {
+  let html = "";
+  for (let d = 1; d <= CONFIG.days; d++) {
+    const a = S.answers.find((x) => x.day === d);
+    const cls = a ? (a.ok ? "good" : "bad") : (d === S.day ? "cur" : "");
+    const mark = a ? (a.ok ? " ✓" : " ✗") : "";
+    html += `<span class="dpill ${cls}">Jour ${d}${mark}</span>`;
+  }
+  $("#day-pills").innerHTML = html;
+}
+
+function renderMiniStats() {
+  const ideal = idealAt(S.history.length - 1);
+  const behind = S.remaining > ideal + 0.05;
+  $("#mini-stats").innerHTML = `
+    <div class="mini"><b>${S.committed}</b><span>points engagés</span></div>
+    <div class="mini ${behind ? "behind" : "ontrack"}"><b>${S.remaining}</b><span>points restants</span></div>
+    <div class="mini"><b>${fmt(ideal)}</b><span>selon la ligne idéale</span></div>`;
+}
+
+function renderDay() {
+  S.answered = false;
+  const ev = EVENTS[S.day - 1];
+  const behind = S.remaining > idealAt(S.day - 1);
+  const raw = !behind && ev.textAhead ? ev.textAhead : ev.text;
+  const text = raw.replace("{reste}", S.remaining).replace("{ideal}", fmt(idealAt(S.day - 1)));
+  const choices = S.choiceOrder[S.day - 1].map((ci, k) =>
+    `<button class="choice" type="button" data-k="${k}"><span class="letter">${"ABC"[k] || k + 1}</span><span class="ctext">${fr(ev.choices[ci].text)}</span></button>`
+  ).join("");
+  $("#event-card").innerHTML = `
+    <span class="event-tag">Jour ${S.day} sur ${CONFIG.days} · Événement</span>
+    <h2>${ev.icon} ${fr(ev.title)}</h2>
+    <p class="event-text">${fr(text)}</p>
+    <p class="choices-label">Que fais-tu, Scrum Master ?</p>
+    <div class="choices">${choices}</div>
+    <div id="day-feedback"></div>
+    <div class="next-row" id="next-row"></div>`;
+  renderDayPills();
+  $("#chart-sprint").innerHTML = chartSVG(S.committed, S.history, false);
+  renderMiniStats();
+  updateHeader();
+}
+
+function answerDay(k) {
+  if (S.answered) return;
+  S.answered = true;
+  const ev = EVENTS[S.day - 1];
+  const order = S.choiceOrder[S.day - 1];
+  const ci = order[k];
+  const ok = !!ev.choices[ci].correct;
+
+  // Burn points for the day.
+  const factor = ok ? (ev.goodBurn ?? 1) : (ev.badBurn ?? 0.5);
+  let burn = Math.round(baseBurn() * factor + (ok ? randInt(0, 1) : randInt(-1, 0)));
+  burn = Math.max(0, Math.min(burn, S.remaining));
+  S.remaining -= burn;
+  let note = "";
+  if (ok && ev.scopeCut && S.remaining > 0) {
+    const lowest = S.picked.slice().sort((a, b) => rankOf(b) - rankOf(a))[0];
+    const st = storyById(lowest);
+    const cut = Math.min(st.points, S.remaining);
+    S.remaining -= cut;
+    note = `✂️ Le Product Owner retire « ${st.title} » du sprint (${cut} points en moins).`;
+  }
+  S.history.push(S.remaining);
+  S.parts.events += ok ? CONFIG.pointsGood : CONFIG.pointsBad;
+  S.answers.push({ day: S.day, choice: ci, ok });
+
+  // Mark the choices.
+  document.querySelectorAll("#event-card .choice").forEach((btn) => {
+    const bk = Number(btn.dataset.k);
+    const isCorrect = !!ev.choices[order[bk]].correct;
+    btn.disabled = true;
+    if (bk === k) btn.classList.add(ok ? "correct" : "wrong");
+    else if (isCorrect) {
+      btn.classList.add("correct");
+      btn.querySelector(".ctext").insertAdjacentHTML("beforeend", `<span class="best-tag">✓ Meilleure réponse</span>`);
+    } else btn.classList.add("dim");
+  });
+
+  const pts = ok ? `+${CONFIG.pointsGood}` : `${CONFIG.pointsBad}`.replace("-", "−");
+  const left = `Il reste ${S.remaining} point${S.remaining > 1 ? "s" : ""} dans le sprint.`;
+  const burnText = ok
+    ? `🔥 L'équipe a réalisé ${burn} points aujourd'hui.${note ? "" : " " + left}`
+    : `🐢 L'équipe n'a réalisé que ${burn} points aujourd'hui. ${left}`;
+  if (note) note += " " + left;
+  const fb = $("#day-feedback");
+  fb.innerHTML = `<div class="feedback ${ok ? "good" : "bad"}" role="status">
+      <strong>${ok ? "✅ Bonne réponse !" : "⚠️ Pas la meilleure réponse…"} (${pts} points)</strong>
+      <p>${fr(ev.choices[ci].feedback)}</p>
+      <p class="burn">${fr(burnText)}</p>
+      ${note ? `<p class="burn">${fr(note)}</p>` : ""}
+    </div>`;
+  const box = fb.firstElementChild;
+  void box.offsetWidth;
+  box.classList.add("show");
+
+  const last = S.day === CONFIG.days;
+  $("#next-row").innerHTML = `<button class="btn btn-primary" id="btn-next" type="button">${last ? "Aller à la revue du sprint ➜" : "Jour suivant ➜"}</button>`;
+  const nextBtn = $("#btn-next");
+  nextBtn.focus({ preventScroll: true });
+  nextBtn.scrollIntoView({ block: "nearest", behavior: "smooth" });
+
+  ok ? sfx.good() : sfx.bad();
+  renderDayPills();
+  $("#chart-sprint").innerHTML = chartSVG(S.committed, S.history, true);
+  renderMiniStats();
+  updateHeader();
+}
+
+function nextDay() {
+  if (S.day < CONFIG.days) {
+    S.day++;
+    sfx.next();
+    renderDay();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  } else {
+    showResults();
+  }
+}
+
+/* ---------- Burndown chart (inline SVG) ---------- */
+function chartSVG(committed, history, animateLast) {
+  const W = 560, H = 330, L = 46, R = 22, T = 26, B = 42;
+  const days = CONFIG.days;
+  const step = committed <= 20 ? 5 : 10;
+  const top = Math.max(step, Math.ceil((committed + 1) / step) * step);
+  const x = (d) => L + (d * (W - L - R)) / days;
+  const y = (v) => T + (1 - v / top) * (H - T - B);
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Burndown chart : ${history.map((v, d) => `jour ${d}, ${v} points`).join(" ; ")}">`;
+  for (let v = 0; v <= top; v += step) {
+    s += `<line class="grid" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/>`;
+    s += `<text class="lab" x="${L - 8}" y="${y(v) + 5}" text-anchor="end">${v}</text>`;
+  }
+  for (let d = 0; d <= days; d++) {
+    s += `<text class="lab" x="${x(d)}" y="${H - B + 24}" text-anchor="middle">${d === 0 ? "Début" : "J" + d}</text>`;
+  }
+  s += `<line class="axis" x1="${L}" x2="${W - R}" y1="${y(0)}" y2="${y(0)}"/>`;
+  s += `<line class="ideal" x1="${x(0)}" y1="${y(committed)}" x2="${x(days)}" y2="${y(0)}"/>`;
+
+  const pts = history.map((v, d) => [x(d), y(v)]);
+  const steady = animateLast && pts.length > 1 ? pts.slice(0, -1) : pts;
+  if (steady.length > 1) s += `<polyline class="real" points="${steady.map((p) => p.join(",")).join(" ")}"/>`;
+  if (animateLast && pts.length > 1) {
+    const [a, b] = pts.slice(-2);
+    s += `<line class="real seg-new" pathLength="1" x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}"/>`;
+  }
+  pts.forEach((p, d) => {
+    const isLast = d === pts.length - 1 && d > 0;
+    s += `<circle class="pt${isLast ? " last" : ""}" cx="${p[0]}" cy="${p[1]}" r="${isLast ? 7 : 5.5}"/>`;
+    s += `<text class="val" x="${p[0]}" y="${p[1] - 13}" text-anchor="middle">${history[d]}</text>`;
+  });
+  return s + "</svg>";
+}
+
+/* ---------- Phase 3: Review & Retrospective ---------- */
+function titleFor(score) {
+  if (score >= 85) return "🏆 Scrum Master Expert";
+  if (score >= 60) return "🥈 Scrum Master Confirmé";
+  return "🌱 Apprenti Scrum Master";
+}
+
+function renderScore() {
+  const sc = totalScore();
+  $("#final-score").textContent = sc;
+  $("#final-title").textContent = titleFor(sc);
+  $("#score-note").textContent = S.retroDone
+    ? "Score final du sprint."
+    : "Réponds à la rétrospective pour compléter ton score (+10 points possibles).";
+  const p = S.parts;
+  const good = S.answers.filter((a) => a.ok).length;
+  const sign = (n) => (n < 0 ? "−" + Math.abs(n) : String(n));
+  const rows = [
+    ["Engagement du sprint", `${S.committed} points engagés`, `${p.engagement} / 20`],
+    ["Priorités du Product Owner", `${S.priorityHits} des 3 premières stories choisies parmi les 3 plus prioritaires`, `${p.priority} / 10`],
+    ["Décisions quotidiennes", `${good} bonne${good > 1 ? "s" : ""} réponse${good > 1 ? "s" : ""} sur ${CONFIG.days}`, `${sign(p.events)} / ${CONFIG.days * CONFIG.pointsGood}`],
+    ["Livraison", S.remaining === 0 ? "Tout le travail engagé est terminé" : `${S.remaining} points non terminés`, `${p.delivery} / 10`],
+    ["Rétrospective", S.retroDone ? (p.retro ? "Amélioration concrète choisie" : "Amélioration à revoir") : "En attente de ta réponse", `${p.retro} / 10`]
+  ];
+  $("#breakdown").innerHTML = rows.map((r) =>
+    `<li><span>${fr(r[0])}<span class="detail">${fr(r[1])}</span></span><b>${r[2]}</b></li>`).join("");
+  updateHeader();
+}
+
+function renderRecap() {
+  const items = [];
+  const key = S.engagement.key;
+  if (key === "over") items.push({ tag: "Sprint Planning", title: "Surcharge du sprint",
+    you: `Tu as engagé ${S.committed} points pour une capacité de ${CONFIG.capacity}.`, best: PLANNING_TEXTS.recapBest, why: PLANNING_TEXTS.whyOver });
+  if (key === "under") items.push({ tag: "Sprint Planning", title: "Sous-engagement",
+    you: `Tu n'as engagé que ${S.committed} points pour une capacité de ${CONFIG.capacity}.`, best: PLANNING_TEXTS.recapBest, why: PLANNING_TEXTS.whyUnder });
+  if (key === "ok") items.push({ tag: "Sprint Planning", title: "Engagement un peu prudent",
+    you: `Tu as engagé ${S.committed} points pour une capacité de ${CONFIG.capacity}.`, best: PLANNING_TEXTS.recapBest, why: PLANNING_TEXTS.whyOk });
+  if (S.priorityHits < 3) {
+    const firsts = S.picked.slice(0, 3).map((id) => `« ${storyById(id).title} »`).join(", ");
+    const tops = STORIES.slice(0, 3).map((s) => `« ${s.title} »`).join(", ");
+    items.push({ tag: "Sprint Planning", title: "Respecter les priorités du Product Owner",
+      you: `Tes premières stories : ${firsts}.`, best: `Commencer par le haut du Product Backlog : ${tops}.`, why: PLANNING_TEXTS.whyPriority });
+  }
+  S.answers.filter((a) => !a.ok).forEach((a) => {
+    const ev = EVENTS[a.day - 1];
+    const best = ev.choices.find((c) => c.correct);
+    items.push({ tag: `Jour ${a.day}`, title: `${ev.icon} ${ev.title}`, you: ev.choices[a.choice].text, best: best.text, why: ev.why });
+  });
+
+  $("#recap").innerHTML = items.length
+    ? items.map((it) => `<div class="recap-item">
+          <span class="tag">${fr(it.tag)}</span>
+          <h4>${fr(it.title)}</h4>
+          <p class="you">❌ <strong>Ton choix :</strong> ${fr(it.you)}</p>
+          <p class="best">✅ <strong>Meilleure réponse :</strong> ${fr(it.best)}</p>
+          <p>💡 <strong>Pourquoi :</strong> ${fr(it.why)}</p>
+        </div>`).join("")
+    : `<p class="recap-perfect">🎉 Aucun faux pas : tu as appliqué Scrum à la perfection pendant tout le sprint !</p>`;
+}
+
+function renderRetro() {
+  $("#retro-q").innerHTML = fr(RETRO.question);
+  $("#retro-choices").innerHTML = S.retroOrder.map((ci, k) =>
+    `<button class="choice" type="button" data-k="${k}"><span class="letter">${"ABC"[k] || k + 1}</span><span class="ctext">${fr(RETRO.choices[ci].text)}</span></button>`
+  ).join("");
+  $("#retro-feedback").innerHTML = "";
+}
+
+function answerRetro(k) {
+  if (S.retroDone) return;
+  S.retroDone = true;
+  const ci = S.retroOrder[k];
+  const ok = !!RETRO.choices[ci].correct;
+  S.parts.retro = ok ? 10 : 0;
+  document.querySelectorAll("#retro-choices .choice").forEach((btn) => {
+    const bk = Number(btn.dataset.k);
+    const isCorrect = !!RETRO.choices[S.retroOrder[bk]].correct;
+    btn.disabled = true;
+    if (bk === k) btn.classList.add(ok ? "correct" : "wrong");
+    else if (isCorrect) {
+      btn.classList.add("correct");
+      btn.querySelector(".ctext").insertAdjacentHTML("beforeend", `<span class="best-tag">✓ Meilleure réponse</span>`);
+    } else btn.classList.add("dim");
+  });
+  $("#retro-feedback").innerHTML = `<div class="feedback ${ok ? "good" : "bad"}" role="status">
+      <strong>${ok ? "✅ Bonne rétrospective ! (+10 points)" : "⚠️ Pas la meilleure amélioration"}</strong>
+      <p>${fr(RETRO.choices[ci].feedback)}</p></div>`;
+  const box = $("#retro-feedback").firstElementChild;
+  void box.offsetWidth;
+  box.classList.add("show");
+  ok ? sfx.good() : sfx.bad();
+  renderScore();
+}
+
+function showResults() {
+  S.parts.delivery = S.committed ? Math.round(10 * (1 - S.remaining / S.committed)) : 0;
+  showScreen("results");
+  $("#chart-final").innerHTML = chartSVG(S.committed, S.history, false);
+  renderScore();
+  renderRecap();
+  renderRetro();
+  sfx.end();
+}
+
+/* ---------- Glossary ---------- */
+let glossReturnFocus = null;
+function openGlossary() {
+  glossReturnFocus = document.activeElement;
+  $("#glossary").classList.add("open");
+  $("#btn-gloss-close").focus();
+}
+function closeGlossary() {
+  $("#glossary").classList.remove("open");
+  if (glossReturnFocus) glossReturnFocus.focus({ preventScroll: true });
+}
+
+/* ---------- Game start / replay ---------- */
+function newGame() {
+  S = newState();
+  lastScore = 0;
+  renderPlanning();
+  showScreen("planning");
+}
+
+function init() {
+  S = newState();
+  $("#gloss-list").innerHTML = GLOSSARY.map((g) => `<dt>${fr(g.term)}</dt><dd>${fr(g.def)}</dd>`).join("");
+  setupPlanningInput();
+  updateMuteButton();
+  updateHeader();
+
+  $("#btn-play").addEventListener("click", newGame);
+  $("#btn-replay").addEventListener("click", newGame);
+  $("#btn-start-sprint").addEventListener("click", startSprint);
+  ["#btn-gloss-top", "#btn-gloss-start", "#btn-gloss-end"].forEach((id) => $(id).addEventListener("click", openGlossary));
+  $("#btn-gloss-close").addEventListener("click", closeGlossary);
+  $("#glossary").addEventListener("click", (e) => { if (e.target.id === "glossary") closeGlossary(); });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && $("#glossary").classList.contains("open")) closeGlossary();
+  });
+  $("#btn-mute").addEventListener("click", () => {
+    muted = !muted;
+    try { localStorage.setItem("sprintdash-muted", muted ? "1" : "0"); } catch (e) { /* ignore */ }
+    updateMuteButton();
+    if (!muted) sfx.pick();
+  });
+  $("#event-card").addEventListener("click", (e) => {
+    const c = e.target.closest(".choice");
+    if (c && !c.disabled) return answerDay(Number(c.dataset.k));
+    if (e.target.closest("#btn-next")) nextDay();
+  });
+  $("#retro-choices").addEventListener("click", (e) => {
+    const c = e.target.closest(".choice");
+    if (c && !c.disabled) answerRetro(Number(c.dataset.k));
+  });
+}
+
+init();
+</script>
+</body>
+</html>
